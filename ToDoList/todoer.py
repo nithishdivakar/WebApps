@@ -1,65 +1,55 @@
 import argparse
 
-from tinydb import TinyDB, Query
+from core import Engine
 
-import utils
-
-DB = TinyDB('db.json',indent=2)
-
-
-
-def insert_todo(eta, title="toDO:", parent=None, labels=[], status=None,notes=''):
-  tid = utils.get_new_tid()
-
-  D = {
-    'tid': tid,
-    'parent':parent,
-    'labels':labels,
-    'title': title,
-    'eta': eta,
-    'status':status,
-    'notes':notes,
-  }
-  try:
-    DB.insert(D)
-    return tid
-  except:
-    return None
-
-def modify(tid, key,value):
-  R = Query()
-  try:
-    DB.update({key: value}, R['tid'] == tid)
-    return True
-  except:
-    return False
+DB = None
+def init(db_name='test.json'):
+  global DB
+  DB = Engine(db_name)
 
 
-def is_present(tid):
-  R = Query()
-  return DB.contains(R.tid == tid)
-
-def purge():
-  '''
-    delete all and only top level tasks which has been marked done
-  '''
-  R = Query()
-  DB.remove(R['status'] == "DONE" and R['parent'] == None)
-
-## function 
+def insert_todo(title, eta=None):
+  return DB.insert(title=title, eta=eta)
 
 def add_parent(child_tid,parent_tid):
-  assert is_present(child_tid)
-  assert is_present(parent_tid)
+  assert DB.is_present(child_tid)
+  assert DB.is_present(parent_tid)
 
-  return modify(child_tid, 'parent', parent_tid)
-
+  return DB.modify(child_tid, 'parent', parent_tid)
 
 def delete(tid):
   '''
     soft delete.
   '''
-  assert is_present(tid)
-  return modify(tid, 'status',"DONE")
+  assert DB.is_present(tid)
+  return DB.modify(tid, 'status',"DONE")
 
+def stringify_record(record, full=False):
+  if not full:
+    return "{} {} {}".format(record['tid'], record['eta'], record['title'].title())
+  record_string = '''
+  Title : {}
+  ETA   : {}
+  Labels: {}
+  Status: {}
+  T-Id  : {}
+  Notes : {}
+  '''.format(
+          record['title'],
+          record['eta'],
+          record['labels'],
+          record['status'],
+          record['tid'],
+          record['notes'],
+  )
+  return record_string
 
+def print_tree(tid=None,indent=0):
+  if indent>5:
+    print("|||")
+    return
+  Records = DB.get_all(tid)
+  for record in Records :
+    print("  "*indent,end='')
+    print(stringify_record(record))
+    print_tree(record['tid'],indent+1)

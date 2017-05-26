@@ -1,27 +1,41 @@
 from tinydb import TinyDB, Query
+from random import randint
 
 import utils
 import todoer
 
+WORDS = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum".split()
 
-D = [{
-  'parent':1000,
-  'labels':[ 'label1', 'label2'],
-  'title':'To do take one test',
-  'eta':utils.time_to_string(2016,12,2,17,6,2),
-  'status':'ongoing'
-},{
-  'parent':None,
-  'labels':[ 'label1', 'label2'],
-  'title':'To do take one test',
-  'eta':None,
-  'status':'ongoing'
-},
-]
+def rnd_wrd():
+  return WORDS[randint(0,len(WORDS)-1)]
 
-'''
-print todoer.insert_todo(**D[0])
+def rnd_time():
+  return utils.time_to_string(
+          year = randint(2015,2018), 
+          month = randint(0,11), 
+          day=randint(0,28), 
+          hour=randint(0,23), 
+          minute=randint(0,59), 
+          sec=randint(0,59)
+  )
 
-print todoer.modify(1,'parent',24)
-'''
-todoer.purge()
+todoer.init('test.json')
+
+todoer.DB._DB.purge_tables()
+
+tids = []
+for i in range(100):
+  if i%3==0:
+    tid = todoer.insert_todo(rnd_wrd())
+  else:
+    tid = todoer.insert_todo(rnd_wrd(),rnd_time())
+  tids.append(tid)
+
+for i in range(100):
+  ind1 = randint(0,len(tids)-1)
+  ind2 = randint(0,len(tids)-1)
+  if ind1!=ind2:
+    todoer.add_parent(tids[ind1],tids[ind2])
+
+  
+todoer.print_tree()
