@@ -9,20 +9,20 @@ def init(db_name='test.json'):
 
 
 def insert_todo(title, eta=None):
-  return DB.insert(title=title, eta=eta)
+  return DB.create(title=title, eta=eta)
 
 def add_parent(child_tid,parent_tid):
   assert DB.is_present(child_tid)
   assert DB.is_present(parent_tid)
 
-  return DB.modify(child_tid, 'parent', parent_tid)
+  return DB.alter(child_tid, 'parent', parent_tid)
 
 def delete(tid):
   '''
     soft delete.
   '''
   assert DB.is_present(tid)
-  return DB.modify(tid, 'status',"DONE")
+  return DB.alter(tid, 'status',"DONE")
 
 def stringify_record(record, full=False):
   if not full:
@@ -48,7 +48,7 @@ def print_tree(tid=None,indent=0):
   if indent>5:
     print("|||")
     return
-  Records = DB.get_all(tid)
+  Records = DB.list(tid)
   for record in Records :
     print("  "*indent,end='')
     print(stringify_record(record))

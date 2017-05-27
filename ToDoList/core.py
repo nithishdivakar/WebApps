@@ -3,10 +3,13 @@ import time
 import utils
 
 class Engine(object):
+  '''
+   CRAP-L : create retrieve alter purge list
+  '''
   def __init__(self,database_name='db.json'):
     self._DB = TinyDB(database_name,indent=2)
 
-  def insert(self, eta=None, title="toDO:", parent=None, labels=[], status=None,notes=''):
+  def create(self, eta=None, title="toDO:", parent=None, labels=[], status=None,notes=''):
     tid = utils.get_new_tid()
     while self.is_present(tid):
       '''
@@ -32,7 +35,13 @@ class Engine(object):
     except:
       return None
   
-  def modify(self,tid, key,value):
+  def retrieve(self, tid):
+    R = Query()
+    if self._DB.contains(R.tid == tid):
+      return self._DB.search(R['tid'] == tid)
+    return None
+
+  def alter(self,tid, key,value):
     R = Query()
     try:
       self._DB.update({key: value}, R['tid'] == tid)
@@ -40,18 +49,23 @@ class Engine(object):
     except:
       return False
   
-  def is_present(self,tid):
-    R = Query()
-    return self._DB.contains(R.tid == tid)
-  
   def purge(self):
     '''
       delete all and only top level tasks which has been marked done
     '''
     R = Query()
     self._DB.remove(R['status'] == "DONE" and R['parent'] == None)
-  def get_all(self,tid=None):
+
+  def list(self,tid=None):
+    '''
+      list all records whose parent is tid
+    '''
     R = Query()
     Records=self._DB.search(R['status'] != "DONE" and R['parent'] == tid)
     Records.sort(key=lambda R: utils.string_to_time(R['eta'])) 
     return Records
+
+  def is_present(self,tid):
+    R = Query()
+    return self._DB.contains(R.tid == tid)
+  
