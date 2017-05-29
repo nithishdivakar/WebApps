@@ -1,0 +1,26 @@
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+
+<body>
+
+<textarea cols="60" rows="5" id="message" name="message"></textarea>
+
+<button name="button">make</button>
+
+<img id="viewport" width="300" src="/static/ttt.png">
+<div id="div1"></div>
+
+<script>
+$("button").click(function(){
+    content = $("textarea#message").val()
+    $("#div1").html("wait");
+    $.post("/add",{texcont: content}, function(result){
+
+        $("#div1").html(result);
+        $("img#viewport").attr("src", "/static/ttt.png?timestamp=" + new Date().getTime());
+    });
+});
+
+</script>
+</body>

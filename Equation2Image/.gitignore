@@ -1,0 +1,8 @@
+**.pyc
+static/*
+*.aux
+*.pdf
+*.tex
+*.png
+*.log
+env/*
